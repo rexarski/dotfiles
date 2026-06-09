@@ -23,6 +23,8 @@ targets land under `~/`.
 │                                            survives `skills` CLI prunes)
 │
 ├── dot_config/                           → ~/.config/
+│   ├── btop/
+│   │   └── btop.conf                     → ~/.config/btop/btop.conf
 │   ├── gh/
 │   │   ├── private_config.yml            → ~/.config/gh/config.yml
 │   │   └── private_hosts.yml             → ~/.config/gh/hosts.yml

@@ -342,6 +342,51 @@
       "skillFolderHash": "150eaf3b8ae2e39da377cfa98a6079ec99e5c646",
       "installedAt": "2026-06-08T15:22:54.406Z",
       "updatedAt": "2026-06-08T15:22:54.406Z"
+    },
+    "defuddle": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/kepano/obsidian-skills.git",
+      "skillPath": "skills/defuddle/SKILL.md",
+      "skillFolderHash": "db0b775af7e7d603f59fa2b67bdef615baf1a48f",
+      "installedAt": "2026-06-08T18:43:46.825Z",
+      "updatedAt": "2026-06-08T18:43:46.825Z"
+    },
+    "json-canvas": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/kepano/obsidian-skills.git",
+      "skillPath": "skills/json-canvas/SKILL.md",
+      "skillFolderHash": "9df7971db7ffebf96f2a207840b9f4765aa11b04",
+      "installedAt": "2026-06-08T18:43:46.840Z",
+      "updatedAt": "2026-06-08T18:43:46.840Z"
+    },
+    "obsidian-bases": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-bases/SKILL.md",
+      "skillFolderHash": "f3330f27de4d7907ead57d0f48672f4d3280bb77",
+      "installedAt": "2026-06-08T18:43:46.855Z",
+      "updatedAt": "2026-06-08T18:43:46.855Z"
+    },
+    "obsidian-cli": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-cli/SKILL.md",
+      "skillFolderHash": "96254a554e480359de7b685571876f2e7f9ba57d",
+      "installedAt": "2026-06-08T18:43:46.870Z",
+      "updatedAt": "2026-06-08T18:43:46.870Z"
+    },
+    "obsidian-markdown": {
+      "source": "kepano/obsidian-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/kepano/obsidian-skills.git",
+      "skillPath": "skills/obsidian-markdown/SKILL.md",
+      "skillFolderHash": "4723197c6dc59abc29819da87863b1ac20b96095",
+      "installedAt": "2026-06-08T18:43:46.900Z",
+      "updatedAt": "2026-06-08T18:43:46.900Z"
     }
   },
   "dismissed": {
@@ -349,20 +394,11 @@
   },
   "lastSelectedAgents": [
     "amp",
-    "antigravity",
-    "cline",
     "codex",
-    "cursor",
-    "deepagents",
-    "dexto",
-    "firebender",
     "gemini-cli",
     "github-copilot",
     "kimi-cli",
     "opencode",
-    "warp",
-    "zed",
-    "claude-code",
-    "pi"
+    "claude-code"
   ]
 }
