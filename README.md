@@ -12,6 +12,9 @@ Authored agent skills live in a separate repo:
 ```
 ~/.local/share/chezmoi/
 ├── README.md, CLAUDE.md                  repo docs (in .chezmoiignore, never applied)
+├── scripts/                              repo-only helpers (in .chezmoiignore;
+│   ├── update-skills.fish                  run from here, not rendered into ~/)
+│   └── list-uncaptured-skills.fish
 ├── dot_Brewfile                          → ~/.Brewfile   (curated bootstrap deps)
 ├── run_onchange_install-packages.sh.tmpl   runs `brew bundle --global` when
 │                                           the Brewfile changes
@@ -23,9 +26,7 @@ Authored agent skills live in a separate repo:
 │   └── allowed_signers                     lets `git log --show-signature` verify
 │
 ├── dot_agents/                           → ~/.agents/
-│   ├── private_dot_skill-lock.json         pins every installed skill
-│   ├── executable_update-skills.fish       reinstall/refresh skills from lockfile
-│   └── executable_list-uncaptured-skills.fish   drift audit (see skills section)
+│   └── private_dot_skill-lock.json         pins every installed skill
 │
 ├── dot_claude/                           → ~/.claude/
 │   ├── private_settings.json               hooks, plugins, statusline config
@@ -73,7 +74,7 @@ On every other machine:
 
 ```fish
 chezmoi update -v                     # git pull + apply in one step
-~/.agents/update-skills.fish          # if .skill-lock.json changed
+~/.local/share/chezmoi/scripts/update-skills.fish   # if .skill-lock.json changed
 ```
 
 `chezmoi update` fails politely if the local source repo is dirty — commit
@@ -100,9 +101,13 @@ Everything is lockfile-tracked — there is no separate “local-only” tree.
 - `~/.claude/skills/` etc. — symlinks, created and maintained by the
   `skills` CLI itself.
 
+Helper scripts live in this repo (`scripts/`, not rendered into `~/`):
+
 ```fish
+set src ~/.local/share/chezmoi
+
 # reinstall/refresh everything in the lockfile
-~/.agents/update-skills.fish          # or a subset: update-skills.fish hugo pdf
+$src/scripts/update-skills.fish       # or a subset: update-skills.fish hugo pdf
 
 # raw CLI
 skills check / update / list
@@ -111,7 +116,7 @@ skills remove -s <name> -g -y
 
 # drift audit: anything listed here would be pruned on the next CLI run —
 # it belongs in rexarski/skills (or another pack) instead
-~/.agents/list-uncaptured-skills.fish
+$src/scripts/list-uncaptured-skills.fish
 ```
 
 Author or edit a skill:
@@ -133,7 +138,8 @@ chezmoi init --apply rexarski/dotfiles
 #       brew bundle --global + npm install -g skills
 
 # 2. skills
-~/.agents/update-skills.fish          # materialize every lockfile-tracked skill
+~/.local/share/chezmoi/scripts/update-skills.fish
+#                                     # materialize every lockfile-tracked skill
 skills add rexarski/skills -g -y      # ensure authored (local-only) skills load
 
 # 3. commit signing (see next section)

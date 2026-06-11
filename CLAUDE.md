@@ -48,8 +48,11 @@ All skills are lockfile-tracked; there is no local-only tree anymore.
 - `~/.claude/skills/` must contain only symlinks (the CLI manages them).
   Never write real files/dirs into it.
 - After any `skills` CLI operation:
-  `~/.agents/list-uncaptured-skills.fish` must report zero uncaptured
-  skills, then `chezmoi re-add ~/.agents/.skill-lock.json`.
+  `scripts/list-uncaptured-skills.fish` (in this repo) must report zero
+  uncaptured skills, then `chezmoi re-add ~/.agents/.skill-lock.json`.
+- Helper scripts live in `scripts/` here — repo-only, listed in
+  `.chezmoiignore`, never rendered into `~/`. Don't re-add them to
+  `dot_agents/`.
 
 ## Commit signing
 
