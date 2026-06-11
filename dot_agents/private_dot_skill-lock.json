@@ -387,6 +387,24 @@
       "skillFolderHash": "4723197c6dc59abc29819da87863b1ac20b96095",
       "installedAt": "2026-06-08T18:43:46.900Z",
       "updatedAt": "2026-06-08T18:43:46.900Z"
+    },
+    "learn-quiz": {
+      "source": "rexarski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/rexarski/skills.git",
+      "skillPath": "skills/learn-quiz/SKILL.md",
+      "skillFolderHash": "6b23c64ece8568858959b6ae69a78908a007900d",
+      "installedAt": "2026-06-11T19:52:34.816Z",
+      "updatedAt": "2026-06-11T19:53:48.561Z"
+    },
+    "yasqat-release": {
+      "source": "rexarski/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/rexarski/skills.git",
+      "skillPath": "skills/yasqat-release/SKILL.md",
+      "skillFolderHash": "3eb70e4ea54501889cade2c9494f9b687efffb85",
+      "installedAt": "2026-06-11T19:53:48.591Z",
+      "updatedAt": "2026-06-11T19:53:48.591Z"
     }
   },
   "dismissed": {
