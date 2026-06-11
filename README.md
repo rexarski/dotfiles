@@ -1,163 +1,152 @@
 # dotfiles (chezmoi source)
 
 Managed by [chezmoi](https://www.chezmoi.io/). Source lives here; rendered
-targets land under `~/`.
+targets land under `~/`. This repo is **public** — see the secrets rules
+in [CLAUDE.md](CLAUDE.md) before adding anything.
+
+Authored agent skills live in a separate repo:
+[rexarski/skills](https://github.com/rexarski/skills) (see “skills” below).
 
 ## Tracked files
 
 ```
 ~/.local/share/chezmoi/
-├── README.md                                         (this file)
+├── README.md, CLAUDE.md                  repo docs (in .chezmoiignore, never applied)
+├── dot_Brewfile                          → ~/.Brewfile   (curated bootstrap deps)
+├── run_onchange_install-packages.sh.tmpl   runs `brew bundle --global` when
+│                                           the Brewfile changes
 ├── dot_gitignore_global                  → ~/.gitignore_global
-├── private_dot_gitconfig.tmpl            → ~/.gitconfig
-│                                           (template: {{ .chezmoi.homeDir }}
-│                                            for portable paths)
-├── private_dot_ssh/                      → ~/.ssh/  (mode 0700)
-│   ├── id_ed25519.pub                    → ~/.ssh/id_ed25519.pub
-│   │                                       (public key for the 1Password
-│   │                                        SSH key used for commit signing)
-│   └── allowed_signers                   → ~/.ssh/allowed_signers
-│                                           (lets `git log --show-signature`
-│                                            verify locally)
+├── private_dot_gitconfig.tmpl            → ~/.gitconfig  (template; portable paths)
+│
+├── private_dot_ssh/                      → ~/.ssh/
+│   ├── id_ed25519.pub                      signing pubkey (1Password holds the key)
+│   └── allowed_signers                     lets `git log --show-signature` verify
 │
 ├── dot_agents/                           → ~/.agents/
-│   ├── private_dot_skill-lock.json       → ~/.agents/.skill-lock.json
-│   ├── executable_update-skills.fish     → ~/.agents/update-skills.fish
-│   ├── executable_list-uncaptured-skills.fish
-│   │                                     → ~/.agents/list-uncaptured-skills.fish
-│   ├── executable_check-skill-symlinks.fish
-│   │                                     → ~/.agents/check-skill-symlinks.fish
-│   └── local-only-skills/                → ~/.agents/local-only-skills/
-│       └── learn-quiz/                     (canonical home for local-only skills;
-│                                            kept outside .agents/skills/ so the
-│                                            `skills` CLI can't prune them)
+│   ├── private_dot_skill-lock.json         pins every installed skill
+│   ├── executable_update-skills.fish       reinstall/refresh skills from lockfile
+│   └── executable_list-uncaptured-skills.fish   drift audit (see skills section)
+│
+├── dot_claude/                           → ~/.claude/
+│   ├── private_settings.json               hooks, plugins, statusline config
+│   ├── executable_statusline-command.sh
+│   └── hooks/executable_context-mode-cache-heal.mjs
 │
 ├── dot_config/                           → ~/.config/
-│   ├── btop/
-│   │   └── btop.conf                     → ~/.config/btop/btop.conf
-│   ├── gh/
-│   │   ├── private_config.yml            → ~/.config/gh/config.yml
-│   │   └── private_hosts.yml             → ~/.config/gh/hosts.yml
-│   ├── private_fish/                     → ~/.config/fish/
-│   │   ├── config.fish
-│   │   ├── fish_plugins
-│   │   └── executable_tide_config.fish
-│   └── zed/
-│       └── private_settings.json         → ~/.config/zed/settings.json
+│   ├── btop/btop.conf                      (save_config_on_exit off — keep it so)
+│   ├── gh/private_config.yml               (hosts.yml deliberately NOT tracked)
+│   ├── private_fish/                       config.fish, fish_plugins, tide config
+│   └── zed/private_settings.json
 │
-└── private_Library/                      → ~/Library/
-    └── private_Application Support/
-        └── com.mitchellh.ghostty/
-            └── config                    (Ghostty terminal config)
+└── private_Library/…/com.mitchellh.ghostty/config
 ```
 
-Naming conventions:
-- `dot_X`        → `.X`
-- `private_X`    → file mode 0600
-- `executable_X` → file mode 0755
+Naming conventions: `dot_X` → `.X` · `private_X` → mode 0600 ·
+`executable_X` → mode 0755 · `X.tmpl` → rendered Go template.
 
 ## Daily workflow
 
-### chezmoi
-
 ```fish
 chezmoi diff                         # preview pending changes (source → target)
-chezmoi apply                        # write source to target
-chezmoi -v apply                     # verbose; shows per-file action
-chezmoi re-add <path>                # pull a managed file back into source
-chezmoi re-add --recursive ~/.agents # re-add everything under a managed dir
-chezmoi cd                           # cd into the source dir (~/.local/share/chezmoi)
-chezmoi managed                      # list every target path chezmoi owns
+chezmoi -v apply                     # write source to target, verbose
+chezmoi re-add <path>                # pull a locally-edited target back into source
+chezmoi add <path>                   # start tracking a new file
+chezmoi forget <path>                # stop tracking (leaves target intact)
+chezmoi cd                           # cd into this source dir
+chezmoi managed                      # list every target chezmoi owns
 ```
 
 When `apply` prompts `diff/overwrite/all-overwrite/skip/quit`:
 - Local edits you want to keep → **`quit`**, then `chezmoi re-add <path>`.
 - Want to discard local edits → `overwrite`.
 
-### skills library
+## Keeping machines in sync
 
-Two source trees, one target:
-
-- `~/.agents/skills/` — real dirs for **lockfile-tracked** skills (managed
-  by the `skills` CLI).
-- `~/.agents/local-only-skills/` — real dirs for **local-only** skills,
-  kept outside `.agents/skills/` so the `skills` CLI can't prune them.
-- `~/.claude/skills/<name>` — symlink to whichever source owns `<name>`.
+On the machine where you made changes:
 
 ```fish
-# update all skills tracked in .skill-lock.json (recommended)
-~/.agents/update-skills.fish
-
-# per-skill refresh: remove + re-add from lockfile source
-~/.agents/update-skills.fish hugo pdf
-
-# raw CLI (operates on .agents/skills/, edits .skill-lock.json)
-skills check          # check for available updates
-skills update         # update everything (no per-skill arg)
-skills list           # list installed
-skills add <repo>     # add new skill pack from github
-skills remove -s <name> -g -y
+chezmoi cd
+git add -p; git commit; git push      # conventional commits, signed
 ```
 
-### local-only skills
-
-Authored skills (not in any GitHub pack) live directly under
-`~/.agents/local-only-skills/<name>/`. They get symlinked into
-`~/.claude/skills/` like tracked skills, but the `skills` CLI never sees
-them so they can't be pruned. To add one: create the dir, then run
-`check-skill-symlinks.fish --link-missing` (or `--fix`).
+On every other machine:
 
 ```fish
-# report drift (missing symlinks, leaked real dirs, wrong targets,
-# and skills in .agents/skills/ that aren't lockfile-tracked)
-~/.agents/check-skill-symlinks.fish
+chezmoi update -v                     # git pull + apply in one step
+~/.agents/update-skills.fish          # if .skill-lock.json changed
+```
 
-# flags
-~/.agents/check-skill-symlinks.fish --help
-#   --prune          delete orphan symlinks in .claude/skills/
-#   --link-missing   create symlinks for skills lacking one in .claude/
-#   --unlink-leaked  replace leaked real dirs in .claude/skills/ with
-#                    symlinks (rm -rf the .claude/ copy, trust source)
-#   --fix            all three remediations
+`chezmoi update` fails politely if the local source repo is dirty — commit
+or stash there first. If `apply` hits a prompt, follow the protocol above.
 
-# audit: any skill in .agents/skills/ NOT in the lockfile is drift —
-# move it into local-only-skills/ before the next `skills` run
+## Skills
+
+Everything is lockfile-tracked — there is no separate “local-only” tree.
+
+- `~/.agents/skills/` — real skill dirs, owned by the `skills` CLI. It
+  **prunes anything not in `.skill-lock.json`**, which is fine because
+  every skill (including authored ones) comes from a tracked repo.
+- Authored skills live in
+  [rexarski/skills](https://github.com/rexarski/skills)
+  (local clone: `~/Developer/skills`), installed like any other pack.
+- `~/.claude/skills/` etc. — symlinks, created and maintained by the
+  `skills` CLI itself.
+
+```fish
+# reinstall/refresh everything in the lockfile
+~/.agents/update-skills.fish          # or a subset: update-skills.fish hugo pdf
+
+# raw CLI
+skills check / update / list
+skills add <owner>/<repo> -g -y
+skills remove -s <name> -g -y
+
+# drift audit: anything listed here would be pruned on the next CLI run —
+# it belongs in rexarski/skills (or another pack) instead
 ~/.agents/list-uncaptured-skills.fish
 ```
 
-### new machine bootstrap
+Author or edit a skill:
 
 ```fish
-chezmoi init <repo-url>             # clone source repo
-chezmoi apply                       # write files (no skills yet)
-brew install skills jq              # CLI deps
-~/.agents/update-skills.fish        # materialize lockfile-tracked skills
-~/.agents/check-skill-symlinks.fish --fix
-                                    # symlink everything from both source
-                                    # trees into ~/.claude/skills/
+cd ~/Developer/skills                 # edit skills/<name>/SKILL.md
+git add -A; git commit; git push
+skills add rexarski/skills -g -y      # refresh installed copy
+chezmoi re-add ~/.agents/.skill-lock.json   # commit lockfile change here
 ```
 
-### commit signing on a new machine
+## New machine bootstrap
 
-Commits are SSH-signed via 1Password's `op-ssh-sign` helper. The
-gitconfig (a chezmoi template) renders the pubkey path against
-`~/.ssh/id_ed25519.pub` per machine. After `chezmoi apply`:
+```fish
+# 1. Homebrew (https://brew.sh), then:
+brew install chezmoi
+chezmoi init --apply rexarski/dotfiles
+#    └─ writes all configs AND runs run_onchange_install-packages:
+#       brew bundle --global + npm install -g skills
 
-1. **Install + sign in to 1Password**, then in app settings:
-   `Developer → Use the SSH agent` → on.
-2. **`~/.ssh/id_ed25519.pub` and `~/.ssh/allowed_signers`** are already
-   written by `chezmoi apply` (they're checked into source — public
-   info, no secret material).
-3. **Verify** with a test signed commit:
+# 2. skills
+~/.agents/update-skills.fish          # materialize every lockfile-tracked skill
+
+# 3. commit signing (see next section)
+```
+
+## Commit signing on a new machine
+
+Commits are SSH-signed via 1Password's `op-ssh-sign`. The gitconfig is a
+template — pubkey paths render against `{{ .chezmoi.homeDir }}` per machine.
+
+1. Install + sign in to 1Password; enable `Developer → Use the SSH agent`.
+2. `~/.ssh/id_ed25519.pub` and `~/.ssh/allowed_signers` are already written
+   by `chezmoi apply` (public info, safe in source).
+3. Verify:
    ```fish
    cd ~/.local/share/chezmoi
    git commit --allow-empty -m "test: signing"
-   git log --show-signature -1     # should show: Good "git" signature
-   git reset --hard HEAD^          # drop the test commit
+   git log --show-signature -1     # expect: Good "git" signature
+   git reset --hard HEAD^
    ```
 
-If the pubkey ever rotates, refresh both files from 1Password and
-`chezmoi re-add`:
+If the pubkey rotates:
 
 ```fish
 set sock ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock

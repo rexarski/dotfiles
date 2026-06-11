@@ -1,7 +1,8 @@
 # Maintenance notes for this chezmoi source repo
 
-This directory is the **source** for chezmoi. Files here render into `~/`
-via `chezmoi apply`. Do not confuse source paths with target paths.
+This directory is the **source** for chezmoi; files render into `~/` via
+`chezmoi apply`. Do not confuse source paths with target paths. Workflows
+and commands live in [README.md](README.md) — this file is invariants only.
 
 ## Source ↔ target
 
@@ -11,111 +12,71 @@ via `chezmoi apply`. Do not confuse source paths with target paths.
 | `private_X`                         | mode 0600             |
 | `executable_X`                      | mode 0755             |
 | `X.tmpl`                            | rendered Go template  |
-| `dot_agents/foo.fish`               | `~/.agents/foo.fish`  |
 | `private_Library/private_App.../X`  | `~/Library/App.../X`  |
 
-When adding a new file with `chezmoi add ~/.some/file`, chezmoi picks the
-prefix automatically — do not hand-name. For templates, use
-`chezmoi add --template ~/.X` (or rename to add `.tmpl` after the fact).
+`chezmoi add` picks prefixes automatically — never hand-name. Templates:
+`chezmoi add --template`, or rename to `.tmpl` after.
 
-## Editing flow
+## Editing flow (pick one direction)
 
-- **Source → target** (the normal direction):
-  edit a file here, then `chezmoi diff && chezmoi apply`.
-- **Target → source** (you edited `~/.X` directly):
-  `chezmoi re-add ~/.X` pulls the change back into source.
-- **Never** edit a target and then also edit source by hand — pick one
-  direction and use the right command, or the next `apply` will prompt
-  `overwrite/skip` and you'll lose work.
+- Source → target: edit here, then `chezmoi diff && chezmoi apply`.
+- Target → source: `chezmoi re-add <target>`.
+- Never edit both sides by hand. If `apply` prompts
+  `diff/overwrite/.../quit`, the target is newer: **quit, then re-add**.
+  `overwrite` discards the local edit.
 
-When `chezmoi apply` prompts `diff/overwrite/all-overwrite/skip/quit`:
-the local edit is newer than source. **Quit, then `chezmoi re-add`** to
-preserve it. `overwrite` discards your local edit.
+## Secrets (this repo is PUBLIC)
 
-## Skills invariant (important)
+- Never track `~/.config/gh/hosts.yml` — gh writes oauth tokens into it
+  when keychain storage is unavailable. It was deliberately forgotten.
+- `private_` controls file mode only; it does not encrypt or hide content
+  from git. No API keys / tokens in any tracked file, ever.
+- Before `chezmoi re-add` of any config an app rewrites (gh, zed, etc.),
+  skim the diff for injected credentials.
+- Secret-bearing configs need `chezmoi secret` / 1Password template
+  lookups, not plain files.
 
-Two source trees, one symlink target. Never mix them up.
+## Skills invariant
 
-- `~/.agents/skills/` — real dirs for **lockfile-tracked** skills only.
-  The `skills` CLI (`/opt/homebrew/bin/skills`) owns this directory and
-  **prunes anything not in `.skill-lock.json`**. Do not put authored
-  skills here; they will disappear.
-- `~/.agents/local-only-skills/` — real dirs for **local-only** skills
-  (learn-quiz, etc.). This is the canonical home, not a backup. The
-  `skills` CLI never touches it, so prunes are impossible.
-- `~/.claude/skills/<name>` — symlink to whichever source owns `<name>`.
-  Must contain only symlinks. Never write real files/dirs here; if a
-  leak happens, `check-skill-symlinks.fish --unlink-leaked` (or `--fix`)
-  reconciles by trusting the source and replacing the leaked copy.
-- After any `skills` CLI operation, run `check-skill-symlinks.fish` to
-  verify no drift (missing symlinks, leaked dirs, untracked skills in
-  `.agents/skills/`).
+All skills are lockfile-tracked; there is no local-only tree anymore.
+
+- `~/.agents/skills/` is owned by the `skills` CLI: it **prunes any dir
+  not in `.skill-lock.json`**. Never place authored skills there directly.
+- Authored skills belong in the
+  [rexarski/skills](https://github.com/rexarski/skills) repo
+  (clone: `~/Developer/skills`), installed via `skills add rexarski/skills`.
+- `~/.claude/skills/` must contain only symlinks (the CLI manages them).
+  Never write real files/dirs into it.
+- After any `skills` CLI operation:
+  `~/.agents/list-uncaptured-skills.fish` must report zero uncaptured
+  skills, then `chezmoi re-add ~/.agents/.skill-lock.json`.
 
 ## Commit signing
 
-`private_dot_gitconfig.tmpl` is a chezmoi template — the `signingkey`
-and `excludesfile` paths use `{{ .chezmoi.homeDir }}` so they render
-correctly regardless of the OS username (`rq` here, was `rexarski`
-elsewhere). Do **not** hardcode `/Users/<name>/` paths in this file.
+`private_dot_gitconfig.tmpl` uses `{{ .chezmoi.homeDir }}` for the
+signingkey/excludesfile paths so they render on any machine. Do **not**
+hardcode `/Users/<name>/` in it. Signing chain: git → `op-ssh-sign` →
+1Password agent. Pubkey + allowed_signers are tracked (public info);
+the private key never leaves 1Password.
 
-SSH signing chain: git → `op-ssh-sign` (1Password helper) → 1Password
-agent → vault. Required on every machine:
-- `~/.ssh/id_ed25519.pub` (chezmoi-managed, source: `private_dot_ssh/`)
-- `~/.ssh/allowed_signers` (chezmoi-managed, lets `git log
-  --show-signature` verify locally)
-- 1Password app installed, signed in, "Use the SSH agent" enabled
+## Churn guards
 
-The pubkey is public info — fine to commit. Private key never leaves
-1Password. See README "commit signing on a new machine" for bootstrap.
-
-## Adding new tracked files
-
-```fish
-chezmoi add ~/.path/to/file          # add a file
-chezmoi add --recursive ~/.some/dir  # add a dir
-chezmoi forget ~/.path               # stop tracking (leaves target intact)
-chezmoi -v apply                     # always preview-then-apply with -v
-```
-
-After `chezmoi add`, commit in the source repo:
-
-```fish
-chezmoi cd
-git status; git add -p; git commit
-```
-
-## Secrets
-
-`.gitignore` and chezmoi `private_` mode handle file perms, but neither
-encrypts content. Do not put API keys / tokens in plain files. Use
-`chezmoi secret` or templates with `1password` / `keychain` lookups if
-you need to track secret-bearing configs.
+- `dot_config/btop/btop.conf` sets `save_config_on_exit = False` so btop
+  doesn't rewrite the target on every exit. Keep that line.
+- `.skill-lock.json` diffs in `lastSelectedAgents` are CLI noise, not
+  real change — fine to commit with the next lockfile update.
 
 ## Keep the README in sync
 
-`README.md` is the human reference (file tree, daily commands). Whenever
-you change what this repo tracks or how the helpers work, update it in
-the same commit:
-
-- added/removed a tracked file → update the tree section
-- new fish helper or new flag on an existing one → update the workflow
-  section and any examples
-- changed the bootstrap sequence (new CLI dep, new init step) → update
-  the new-machine bootstrap block
-
-If you're about to commit a change and haven't touched README.md, ask
-yourself whether the change is visible to a future-you reading the
-README. If yes, edit the README before committing.
+README.md is the human reference. In the same commit: tracked-file
+changes → update the tree; helper/flag changes → update workflows;
+bootstrap changes (new dep, new init step) → update the bootstrap block.
 
 ## Don't
 
-- Don't run `git` directly inside `~/` — only inside the chezmoi source
-  dir (or use `chezmoi cd`).
-- Don't `rm` files in `~/.claude/skills/` without checking they're orphan
-  symlinks first (`check-skill-symlinks.fish`).
-- Don't `cp` skills around manually — use the fish helpers in
-  `~/.agents/` so backups and symlinks stay consistent.
-- Don't add files to `.agents/skills/` and expect them to persist —
-  the `skills` CLI will prune them. Authored skills go directly in
-  `.agents/local-only-skills/<name>/`, then `check-skill-symlinks.fish
-  --link-missing` symlinks them into `~/.claude/skills/`.
+- Don't run `git` inside `~/` — only in this source dir (`chezmoi cd`).
+- Don't commit without conventional-commit messages.
+- Don't `rm` anything in `~/.claude/skills/` without confirming it's an
+  orphan symlink.
+- Don't track high-churn or secret-prone files without a churn/secret
+  guard (see above).
