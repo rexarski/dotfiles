@@ -32,16 +32,22 @@ preserve it. `overwrite` discards your local edit.
 
 ## Skills invariant (important)
 
-- `~/.agents/skills/` holds real skill directories. `~/.claude/skills/`
-  is symlinks pointing into it. Never write real files into
-  `~/.claude/skills/` — it should contain only symlinks.
-- The `skills` CLI (`/opt/homebrew/bin/skills`) treats `~/.agents/skills/`
-  as state it owns and **prunes any directory not in `.skill-lock.json`**.
-  Local-authored skills (yasqat-release, learn-quiz, etc.) are vulnerable.
-- Canonical backups of local-only skills live in
-  `dot_agents/local-only-skills/` (target: `~/.agents/local-only-skills/`).
-  After any `skills` CLI operation, run
-  `~/.agents/check-skill-symlinks.fish` to detect and restore prunes.
+Two source trees, one symlink target. Never mix them up.
+
+- `~/.agents/skills/` — real dirs for **lockfile-tracked** skills only.
+  The `skills` CLI (`/opt/homebrew/bin/skills`) owns this directory and
+  **prunes anything not in `.skill-lock.json`**. Do not put authored
+  skills here; they will disappear.
+- `~/.agents/local-only-skills/` — real dirs for **local-only** skills
+  (learn-quiz, etc.). This is the canonical home, not a backup. The
+  `skills` CLI never touches it, so prunes are impossible.
+- `~/.claude/skills/<name>` — symlink to whichever source owns `<name>`.
+  Must contain only symlinks. Never write real files/dirs here; if a
+  leak happens, `check-skill-symlinks.fish --unlink-leaked` (or `--fix`)
+  reconciles by trusting the source and replacing the leaked copy.
+- After any `skills` CLI operation, run `check-skill-symlinks.fish` to
+  verify no drift (missing symlinks, leaked dirs, untracked skills in
+  `.agents/skills/`).
 
 ## Adding new tracked files
 
@@ -91,5 +97,6 @@ README. If yes, edit the README before committing.
 - Don't `cp` skills around manually — use the fish helpers in
   `~/.agents/` so backups and symlinks stay consistent.
 - Don't add files to `.agents/skills/` and expect them to persist —
-  the `skills` CLI will prune them. Put them in `.agents/local-only-skills/`
-  and let `check-skill-symlinks.fish` restore them on demand.
+  the `skills` CLI will prune them. Authored skills go directly in
+  `.agents/local-only-skills/<name>/`, then `check-skill-symlinks.fish
+  --link-missing` symlinks them into `~/.claude/skills/`.

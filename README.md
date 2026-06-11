@@ -19,8 +19,9 @@ targets land under `~/`.
 │   ├── executable_check-skill-symlinks.fish
 │   │                                     → ~/.agents/check-skill-symlinks.fish
 │   └── local-only-skills/                → ~/.agents/local-only-skills/
-│       └── learn-quiz/                     (canonical backup of local-only skills;
-│                                            survives `skills` CLI prunes)
+│       └── learn-quiz/                     (canonical home for local-only skills;
+│                                            kept outside .agents/skills/ so the
+│                                            `skills` CLI can't prune them)
 │
 ├── dot_config/                           → ~/.config/
 │   ├── btop/
@@ -66,8 +67,13 @@ When `apply` prompts `diff/overwrite/all-overwrite/skip/quit`:
 
 ### skills library
 
-`~/.agents/skills/` is the canonical skill library (real dirs).
-`~/.claude/skills/` is symlinks pointing into it.
+Two source trees, one target:
+
+- `~/.agents/skills/` — real dirs for **lockfile-tracked** skills (managed
+  by the `skills` CLI).
+- `~/.agents/local-only-skills/` — real dirs for **local-only** skills,
+  kept outside `.agents/skills/` so the `skills` CLI can't prune them.
+- `~/.claude/skills/<name>` — symlink to whichever source owns `<name>`.
 
 ```fish
 # update all skills tracked in .skill-lock.json (recommended)
@@ -86,28 +92,28 @@ skills remove -s <name> -g -y
 
 ### local-only skills
 
-Skills authored locally (not in any GitHub pack) are vulnerable to `skills`
-CLI prunes since they aren't in the lockfile. Workflow:
+Authored skills (not in any GitHub pack) live directly under
+`~/.agents/local-only-skills/<name>/`. They get symlinked into
+`~/.claude/skills/` like tracked skills, but the `skills` CLI never sees
+them so they can't be pruned. To add one: create the dir, then run
+`check-skill-symlinks.fish --link-missing` (or `--fix`).
 
 ```fish
-# list skills present in .agents/skills/ but NOT in .skill-lock.json
-~/.agents/list-uncaptured-skills.fish
-
-# verify symlink integrity, backup local-only skills,
-# and prompt to restore anything that was pruned
+# report drift (missing symlinks, leaked real dirs, wrong targets,
+# and skills in .agents/skills/ that aren't lockfile-tracked)
 ~/.agents/check-skill-symlinks.fish
-
-# non-interactive auto-restore
-~/.agents/check-skill-symlinks.fish --yes
 
 # flags
 ~/.agents/check-skill-symlinks.fish --help
 #   --prune          delete orphan symlinks in .claude/skills/
 #   --link-missing   create symlinks for skills lacking one in .claude/
-#   --fix            both of the above
-#   --yes            auto-confirm the restore prompt
-#   --no-backup      skip backing up local-only skills
-#   --no-restore     skip restore detection
+#   --unlink-leaked  replace leaked real dirs in .claude/skills/ with
+#                    symlinks (rm -rf the .claude/ copy, trust source)
+#   --fix            all three remediations
+
+# audit: any skill in .agents/skills/ NOT in the lockfile is drift —
+# move it into local-only-skills/ before the next `skills` run
+~/.agents/list-uncaptured-skills.fish
 ```
 
 ### new machine bootstrap
@@ -115,9 +121,9 @@ CLI prunes since they aren't in the lockfile. Workflow:
 ```fish
 chezmoi init <repo-url>             # clone source repo
 chezmoi apply                       # write files (no skills yet)
-brew install skills jq rsync        # CLI deps
-~/.agents/update-skills.fish        # materialize all 38 tracked skills
-~/.agents/check-skill-symlinks.fish --fix --yes
-                                    # restore local-only skills from backup,
-                                    # fix any symlink drift
+brew install skills jq              # CLI deps
+~/.agents/update-skills.fish        # materialize lockfile-tracked skills
+~/.agents/check-skill-symlinks.fish --fix
+                                    # symlink everything from both source
+                                    # trees into ~/.claude/skills/
 ```
