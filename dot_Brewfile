@@ -1,0 +1,12 @@
+# Curated bootstrap deps for this dotfiles repo (brew bundle --global).
+# Only what the tracked configs and helpers need — not a full system dump.
+
+brew "btop"
+brew "chezmoi"
+brew "fish"
+brew "gh"
+brew "jq"
+brew "node"   # for `npm install -g skills`
+
+cask "1password"
+cask "ghostty"
