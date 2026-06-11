@@ -10,11 +10,13 @@ via `chezmoi apply`. Do not confuse source paths with target paths.
 | `dot_X`                             | `~/.X`                |
 | `private_X`                         | mode 0600             |
 | `executable_X`                      | mode 0755             |
+| `X.tmpl`                            | rendered Go template  |
 | `dot_agents/foo.fish`               | `~/.agents/foo.fish`  |
 | `private_Library/private_App.../X`  | `~/Library/App.../X`  |
 
 When adding a new file with `chezmoi add ~/.some/file`, chezmoi picks the
-prefix automatically — do not hand-name.
+prefix automatically — do not hand-name. For templates, use
+`chezmoi add --template ~/.X` (or rename to add `.tmpl` after the fact).
 
 ## Editing flow
 
@@ -48,6 +50,23 @@ Two source trees, one symlink target. Never mix them up.
 - After any `skills` CLI operation, run `check-skill-symlinks.fish` to
   verify no drift (missing symlinks, leaked dirs, untracked skills in
   `.agents/skills/`).
+
+## Commit signing
+
+`private_dot_gitconfig.tmpl` is a chezmoi template — the `signingkey`
+and `excludesfile` paths use `{{ .chezmoi.homeDir }}` so they render
+correctly regardless of the OS username (`rq` here, was `rexarski`
+elsewhere). Do **not** hardcode `/Users/<name>/` paths in this file.
+
+SSH signing chain: git → `op-ssh-sign` (1Password helper) → 1Password
+agent → vault. Required on every machine:
+- `~/.ssh/id_ed25519.pub` (chezmoi-managed, source: `private_dot_ssh/`)
+- `~/.ssh/allowed_signers` (chezmoi-managed, lets `git log
+  --show-signature` verify locally)
+- 1Password app installed, signed in, "Use the SSH agent" enabled
+
+The pubkey is public info — fine to commit. Private key never leaves
+1Password. See README "commit signing on a new machine" for bootstrap.
 
 ## Adding new tracked files
 

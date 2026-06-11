@@ -9,7 +9,16 @@ targets land under `~/`.
 ~/.local/share/chezmoi/
 ├── README.md                                         (this file)
 ├── dot_gitignore_global                  → ~/.gitignore_global
-├── private_dot_gitconfig                 → ~/.gitconfig
+├── private_dot_gitconfig.tmpl            → ~/.gitconfig
+│                                           (template: {{ .chezmoi.homeDir }}
+│                                            for portable paths)
+├── private_dot_ssh/                      → ~/.ssh/  (mode 0700)
+│   ├── id_ed25519.pub                    → ~/.ssh/id_ed25519.pub
+│   │                                       (public key for the 1Password
+│   │                                        SSH key used for commit signing)
+│   └── allowed_signers                   → ~/.ssh/allowed_signers
+│                                           (lets `git log --show-signature`
+│                                            verify locally)
 │
 ├── dot_agents/                           → ~/.agents/
 │   ├── private_dot_skill-lock.json       → ~/.agents/.skill-lock.json
@@ -126,4 +135,33 @@ brew install skills jq              # CLI deps
 ~/.agents/check-skill-symlinks.fish --fix
                                     # symlink everything from both source
                                     # trees into ~/.claude/skills/
+```
+
+### commit signing on a new machine
+
+Commits are SSH-signed via 1Password's `op-ssh-sign` helper. The
+gitconfig (a chezmoi template) renders the pubkey path against
+`~/.ssh/id_ed25519.pub` per machine. After `chezmoi apply`:
+
+1. **Install + sign in to 1Password**, then in app settings:
+   `Developer → Use the SSH agent` → on.
+2. **`~/.ssh/id_ed25519.pub` and `~/.ssh/allowed_signers`** are already
+   written by `chezmoi apply` (they're checked into source — public
+   info, no secret material).
+3. **Verify** with a test signed commit:
+   ```fish
+   cd ~/.local/share/chezmoi
+   git commit --allow-empty -m "test: signing"
+   git log --show-signature -1     # should show: Good "git" signature
+   git reset --hard HEAD^          # drop the test commit
+   ```
+
+If the pubkey ever rotates, refresh both files from 1Password and
+`chezmoi re-add`:
+
+```fish
+set sock ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+env SSH_AUTH_SOCK=$sock ssh-add -L | grep '^ssh-ed25519' > ~/.ssh/id_ed25519.pub
+awk '{print "rexarski@gmail.com " $0}' ~/.ssh/id_ed25519.pub > ~/.ssh/allowed_signers
+chezmoi re-add ~/.ssh/id_ed25519.pub ~/.ssh/allowed_signers
 ```
