@@ -86,9 +86,17 @@ Everything is lockfile-tracked — there is no separate “local-only” tree.
 - `~/.agents/skills/` — real skill dirs, owned by the `skills` CLI. It
   **prunes anything not in `.skill-lock.json`**, which is fine because
   every skill (including authored ones) comes from a tracked repo.
-- Authored skills live in
+- Authored ("local-only") skills live in
   [rexarski/skills](https://github.com/rexarski/skills)
-  (local clone: `~/Developer/skills`), installed like any other pack.
+  (local clone: `~/Developer/skills`). **To load them on any machine:**
+
+  ```fish
+  skills add rexarski/skills -g -y
+  ```
+
+  That installs them into `~/.agents/skills/`, records them in the
+  lockfile, and symlinks them into each agent's skill dir — same as any
+  third-party pack.
 - `~/.claude/skills/` etc. — symlinks, created and maintained by the
   `skills` CLI itself.
 
@@ -126,6 +134,7 @@ chezmoi init --apply rexarski/dotfiles
 
 # 2. skills
 ~/.agents/update-skills.fish          # materialize every lockfile-tracked skill
+skills add rexarski/skills -g -y      # ensure authored (local-only) skills load
 
 # 3. commit signing (see next section)
 ```

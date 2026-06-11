@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # List skill directories in ~/.agents/skills/ that are NOT tracked in .skill-lock.json.
-# These are "local-only" skills — candidates for either publishing-and-tracking
-# or for inclusion in chezmoi alongside the lockfile.
+# Anything listed here will be PRUNED by the next `skills` CLI run — move it
+# into the rexarski/skills repo and reinstall: `skills add rexarski/skills -g -y`.
 
 set -l lock ~/.agents/.skill-lock.json
 set -l skills_dir ~/.agents/skills
