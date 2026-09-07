@@ -4,9 +4,6 @@ Managed by [chezmoi](https://www.chezmoi.io/). Source lives here; rendered
 targets land under `~/`. This repo is **public** — see the secrets rules
 in [CLAUDE.md](CLAUDE.md) before adding anything.
 
-Authored agent skills live in a separate repo:
-[rexarski/skills](https://github.com/rexarski/skills) (see “skills” below).
-
 ## Tracked files
 
 ```
@@ -82,24 +79,19 @@ or stash there first. If `apply` hits a prompt, follow the protocol above.
 
 ## Skills
 
-Everything is lockfile-tracked — there is no separate “local-only” tree.
+Everything is lockfile-tracked — there is no separate “local-only” or
+authored-skills tree. Every skill comes from a third-party pack installed
+with `skills add <owner>/<repo>`.
 
 - `~/.agents/skills/` — real skill dirs, owned by the `skills` CLI. It
   **prunes anything not in `.skill-lock.json`**, which is fine because
-  every skill (including authored ones) comes from a tracked repo.
-- Authored ("local-only") skills live in
-  [rexarski/skills](https://github.com/rexarski/skills)
-  (local clone: `~/Developer/skills`). **To load them on any machine:**
-
-  ```fish
-  skills add rexarski/skills -g -y
-  ```
-
-  That installs them into `~/.agents/skills/`, records them in the
-  lockfile, and symlinks them into each agent's skill dir — same as any
-  third-party pack.
+  every skill comes from a tracked repo.
 - `~/.claude/skills/` etc. — symlinks, created and maintained by the
   `skills` CLI itself.
+- `.skill-lock.json` is the single source of truth. Two failure modes to
+  watch for: a dir with no lock entry (gets pruned — see the drift audit
+  below) and a lock entry with no dir (`skills update` fails on it; the
+  CLI can't remove it either, so drop the JSON entry by hand).
 
 Helper scripts live in this repo (`scripts/`, not rendered into `~/`):
 
@@ -115,17 +107,14 @@ skills add <owner>/<repo> -g -y
 skills remove -s <name> -g -y
 
 # drift audit: anything listed here would be pruned on the next CLI run —
-# it belongs in rexarski/skills (or another pack) instead
+# either `skills add` it from its source pack or delete it
 $src/scripts/list-uncaptured-skills.fish
 ```
 
-Author or edit a skill:
+After any `skills add` / `remove` / `update`, capture the lockfile:
 
 ```fish
-cd ~/Developer/skills                 # edit skills/<name>/SKILL.md
-git add -A; git commit; git push
-skills add rexarski/skills -g -y      # refresh installed copy
-chezmoi re-add ~/.agents/.skill-lock.json   # commit lockfile change here
+chezmoi re-add ~/.agents/.skill-lock.json   # then commit here
 ```
 
 ## New machine bootstrap
@@ -140,7 +129,6 @@ chezmoi init --apply rexarski/dotfiles
 # 2. skills
 ~/.local/share/chezmoi/scripts/update-skills.fish
 #                                     # materialize every lockfile-tracked skill
-skills add rexarski/skills -g -y      # ensure authored (local-only) skills load
 
 # 3. commit signing (see next section)
 ```

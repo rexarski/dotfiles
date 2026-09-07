@@ -38,13 +38,15 @@ and commands live in [README.md](README.md) — this file is invariants only.
 
 ## Skills invariant
 
-All skills are lockfile-tracked; there is no local-only tree anymore.
+All skills are lockfile-tracked; there is no local-only or authored-skills
+tree anymore (the former `rexarski/skills` repo and its `~/Developer/skills`
+clone are gone — don't reintroduce them).
 
 - `~/.agents/skills/` is owned by the `skills` CLI: it **prunes any dir
-  not in `.skill-lock.json`**. Never place authored skills there directly.
-- Authored skills belong in the
-  [rexarski/skills](https://github.com/rexarski/skills) repo
-  (clone: `~/Developer/skills`), installed via `skills add rexarski/skills`.
+  not in `.skill-lock.json`**. Never place skills there by hand; every
+  skill enters via `skills add <owner>/<repo> -g -y`.
+- A lock entry whose dir is missing makes `skills update` fail and the
+  CLI cannot `remove` it; delete that entry from the JSON directly.
 - `~/.claude/skills/` must contain only symlinks (the CLI manages them).
   Never write real files/dirs into it.
 - After any `skills` CLI operation:

@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # List skill directories in ~/.agents/skills/ that are NOT tracked in .skill-lock.json.
-# Anything listed here will be PRUNED by the next `skills` CLI run — move it
-# into the rexarski/skills repo and reinstall: `skills add rexarski/skills -g -y`.
+# Anything listed here will be PRUNED by the next `skills` CLI run — either
+# reinstall it from its source pack (`skills add <owner>/<repo> -g -y`) or delete it.
 
 set -l lock ~/.agents/.skill-lock.json
 set -l skills_dir ~/.agents/skills
