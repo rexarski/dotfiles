@@ -90,7 +90,11 @@
     ],
     "model_parameters": [],
   },
-  "icon_theme": "Catppuccin Macchiato",
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Catppuccin Macchiato",
+    "dark": "Colored Zed Icons Theme Dark"
+  },
   "session": {
     "trust_all_worktrees": true,
   },
@@ -133,6 +137,6 @@
   "theme": {
     "mode": "dark",
     "light": "One Light",
-    "dark": "Snazzy Theme - blurred",
+    "dark": "JetBrains Islands Dark",
   },
 }

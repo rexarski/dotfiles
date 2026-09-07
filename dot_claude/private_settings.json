@@ -3,7 +3,7 @@
     "commit": "",
     "pr": ""
   },
-  "model": "claude-fable-5",
+  "model": "claude-fable-5-1[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -26,7 +26,8 @@
     "episodic-memory@superpowers-marketplace": true,
     "double-shot-latte@superpowers-marketplace": true,
     "context-mode@context-mode": true,
-    "shortcuts-playground@shortcuts-playground": true
+    "shortcuts-playground@shortcuts-playground": true,
+    "swift-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "context-mode": {
@@ -43,5 +44,6 @@
     }
   },
   "effortLevel": "high",
+  "theme": "auto",
   "agentPushNotifEnabled": true
 }
