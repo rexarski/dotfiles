@@ -1,5 +1,10 @@
 #!/bin/sh
-# Refresh skills.txt from this machine's skill install, and stage it.
-# Enable once per clone: git config core.hooksPath .githooks
+# Refresh the per-machine manifests (skills.txt, tinycast-extensions.txt)
+# and stage them. Enable once per clone: git config core.hooksPath .githooks
 repo=$(git rev-parse --show-toplevel)
-"$repo/scripts/skills-manifest.sh" && git add "$repo/skills.txt"
+"$repo/scripts/skills-manifest.sh" || exit 1
+"$repo/scripts/tinycast-manifest.sh" || exit 1
+for f in skills.txt tinycast-extensions.txt; do
+  [ -f "$repo/$f" ] && git add "$repo/$f"
+done
+exit 0

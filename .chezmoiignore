@@ -3,6 +3,7 @@ README.md
 CLAUDE.md
 scripts
 skills.txt
+tinycast-extensions.txt
 .githooks
 
 # macOS-only: skip on Linux and anything else
