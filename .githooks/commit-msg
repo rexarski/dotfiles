@@ -1,0 +1,17 @@
+#!/bin/sh
+# Reject commit messages that aren't Conventional Commits.
+# Enable once per clone: git config core.hooksPath .githooks
+subject=$(grep -v '^#' "$1" | head -n 1)
+
+# merges, reverts and fixup/squash commits pass through
+case "$subject" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
+esac
+
+types='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+if ! printf '%s\n' "$subject" | grep -Eq "^($types)(\([a-z0-9._/-]+\))?!?: .+"; then
+  echo "commit-msg: not a conventional commit:" >&2
+  echo "  $subject" >&2
+  echo "expected: <type>(<scope>)?: <summary>   types: $types" >&2
+  exit 1
+fi
