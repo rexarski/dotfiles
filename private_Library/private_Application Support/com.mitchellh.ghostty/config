@@ -6,7 +6,9 @@
   # View options: ghostty +show-config --default --docs
 
   # --- Typography ---
-  font-family = JetBrainsMonoNerdFont
+  font-family = JetBrainsMono Nerd Font Mono
+  # CJK fallback: Sarasa Mono SC is 2-cell monospace, so Chinese lines up with the grid
+  font-family = Sarasa Mono SC
   font-size = 14
   font-thicken = true
   adjust-cell-height = 2

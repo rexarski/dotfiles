@@ -1,0 +1,45 @@
+# Installed skills on the last machine that committed (generated, don't edit).
+# Install one:  skills add <source> -g -y -s <name>
+#
+# source	name
+anthropics/skills	frontend-design
+anthropics/skills	pdf
+anthropics/skills	skill-creator
+aref-vc/tufte-claude-skill	tufte
+cristicretu/family-taste-skill	design-with-taste
+forrestchang/andrej-karpathy-skills	karpathy-guidelines
+github/awesome-copilot	conventional-commit
+kepano/obsidian-skills	defuddle
+kepano/obsidian-skills	json-canvas
+kepano/obsidian-skills	obsidian-bases
+kepano/obsidian-skills	obsidian-cli
+kepano/obsidian-skills	obsidian-markdown
+leonxlnx/taste-skill	design-taste-frontend
+mattpocock/skills	diagnosing-bugs
+mattpocock/skills	grill-me
+mattpocock/skills	grill-with-docs
+mattpocock/skills	handoff
+mattpocock/skills	improve-codebase-architecture
+mattpocock/skills	prototype
+mattpocock/skills	setup-matt-pocock-skills
+mattpocock/skills	tdd
+mattpocock/skills	to-spec
+mattpocock/skills	to-tickets
+mattpocock/skills	triage
+msmps/opentui-skill	opentui
+notedit/happy-skills	feature-dev
+obra/superpowers	brainstorming
+op7418/guizang-ppt-skill	guizang-ppt-skill
+tw93/kami	kami
+tw93/Waza	check
+tw93/Waza	health
+tw93/Waza	hunt
+tw93/Waza	learn
+tw93/Waza	read
+tw93/Waza	think
+tw93/Waza	ui
+tw93/Waza	write
+wshobson/agents	python-packaging
+wshobson/agents	python-performance-optimization
+yetone/kill-ai-slop	kill-ai-slop
+(app-installed)	rex

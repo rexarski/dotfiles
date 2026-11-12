@@ -1,7 +1,7 @@
 # Environment Variables
 # --------------------
 
-zoxide init fish | source
+type -q zoxide; and zoxide init fish | source
 
 # Aliases
 # -------
@@ -16,18 +16,16 @@ if type -q eza
 end
 
 # uv
-fish_add_path "/Users/rexarski/.local/bin"
+fish_add_path $HOME/.local/bin
 
 # bun
-set --export BUN_INSTALL "$HOME/.bun"
-set --export PATH $BUN_INSTALL/bin $PATH
+if test -d $HOME/.bun
+    set --export BUN_INSTALL "$HOME/.bun"
+    set --export PATH $BUN_INSTALL/bin $PATH
+end
 
 # Obsidian CLI
-fish_add_path /Applications/Obsidian.app/Contents/MacOS
-
-# Added by OrbStack: command-line tools and integration
-# This won't be added again if you remove it.
-source ~/.orbstack/shell/init2.fish 2>/dev/null || :
+test -d /Applications/Obsidian.app; and fish_add_path /Applications/Obsidian.app/Contents/MacOS
 
 # Emacs aliases
 function em
@@ -48,10 +46,8 @@ function y
 	end
 	rm -f -- "$tmp"
 end
-# peon-ping quick controls
-function peon; bash /Users/rexarski/.claude/hooks/peon-ping/peon.sh $argv; end
 
 # Added by LM Studio CLI (lms)
-set -gx PATH $PATH /Users/rexarski/.lmstudio/bin
+test -d $HOME/.lmstudio/bin; and set -gx PATH $PATH $HOME/.lmstudio/bin
 # End of LM Studio CLI section
 
