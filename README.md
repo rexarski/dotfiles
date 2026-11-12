@@ -11,33 +11,46 @@ in [CLAUDE.md](CLAUDE.md) before adding anything.
 ├── README.md, CLAUDE.md                  repo docs (in .chezmoiignore, never applied)
 ├── scripts/                              repo-only helpers (in .chezmoiignore;
 │   ├── update-skills.fish                  run from here, not rendered into ~/)
-│   └── list-uncaptured-skills.fish
+│   ├── list-uncaptured-skills.fish
+│   └── skills-manifest.sh                  writes skills.txt (run by the hook)
+├── .githooks/                            repo-only (core.hooksPath)
+│   ├── pre-commit                          refreshes + stages skills.txt
+│   └── commit-msg                          rejects non-conventional messages
+├── skills.txt                            installed-skills snapshot (generated)
 ├── dot_Brewfile                          → ~/.Brewfile   (curated bootstrap deps)
 ├── run_onchange_install-packages.sh.tmpl   runs `brew bundle --global` when
 │                                           the Brewfile changes
-├── dot_gitignore_global                  → ~/.gitignore_global
+├── dot_gitignore_global                  → ~/.gitignore_global (the only global
+│                                           ignore; no ~/.config/git/ignore)
 ├── private_dot_gitconfig.tmpl            → ~/.gitconfig  (template; portable paths)
+├── private_dot_npmrc                     → ~/.npmrc      (hardening: ignore-scripts,
+│                                           min-release-age; no tokens here)
 │
 ├── private_dot_ssh/                      → ~/.ssh/
 │   ├── id_ed25519.pub                      signing pubkey (1Password holds the key)
 │   └── allowed_signers                     lets `git log --show-signature` verify
 │
-├── dot_agents/                           → ~/.agents/
-│   └── private_dot_skill-lock.json         pins every installed skill
-│
 ├── dot_claude/                           → ~/.claude/
-│   ├── private_settings.json               hooks, plugins, statusline config
-│   ├── executable_statusline-command.sh
+│   ├── executable_statusline-command.sh    (settings.json NOT tracked — apps
+│   │                                         like Orca rewrite it)
 │   └── hooks/executable_context-mode-cache-heal.mjs
 │
 ├── dot_config/                           → ~/.config/
-│   ├── btop/btop.conf                      (save_config_on_exit off — keep it so)
-│   ├── gh/private_config.yml               (hosts.yml deliberately NOT tracked)
-│   ├── private_fish/                       config.fish, fish_plugins, tide config
-│   └── zed/private_settings.json
+│   ├── private_fish/                       config.fish, fish_plugins, tide config,
+│   │                                       functions/fish_greeting.fish, tips.txt
+│   ├── fastfetch/greeting.jsonc            used by fish_greeting
+│   ├── doom/                               Doom Emacs: init.el, config.el, packages.el
+│   └── yazi/                               package.toml + theme.toml only — restore
+│                                           plugins/flavors with `ya pkg install`
 │
 └── private_Library/…/com.mitchellh.ghostty/config
 ```
+
+Not tracked on purpose: configs that apps rewrite themselves (zed,
+`~/.claude/settings.json`, btop, gh, opencode, app `.plist`s), logs-only
+dirs (mole, herdr), and generated trees (`~/.config/emacs`, yazi
+plugins). They drift per machine and would only churn. Paths in tracked files use `$HOME` / `{{ .chezmoi.homeDir }}`,
+never `/Users/<name>/`, and nothing branches on hostname.
 
 Naming conventions: `dot_X` → `.X` · `private_X` → mode 0600 ·
 `executable_X` → mode 0755 · `X.tmpl` → rendered Go template.
@@ -64,14 +77,15 @@ On the machine where you made changes:
 
 ```fish
 chezmoi cd
-git add -p; git commit; git push      # conventional commits, signed
+git add -p; git commit; git push      # conventional commits (enforced by
+                                      # .githooks/commit-msg), signed
 ```
 
 On every other machine:
 
 ```fish
 chezmoi update -v                     # git pull + apply in one step
-~/.local/share/chezmoi/scripts/update-skills.fish   # if .skill-lock.json changed
+# skills are not synced — pick what you want from skills.txt (see Skills)
 ```
 
 `chezmoi update` fails politely if the local source repo is dirty — commit
@@ -79,43 +93,36 @@ or stash there first. If `apply` hits a prompt, follow the protocol above.
 
 ## Skills
 
-Everything is lockfile-tracked — there is no separate “local-only” or
-authored-skills tree. Every skill comes from a third-party pack installed
-with `skills add <owner>/<repo>`.
+Skills are **per machine, not synced**. chezmoi does not track
+`~/.agents/.skill-lock.json`; instead every commit here regenerates
+`skills.txt` — one `source<TAB>name` line per installed skill — so other
+machines can install what they want:
 
-- `~/.agents/skills/` — real skill dirs, owned by the `skills` CLI. It
-  **prunes anything not in `.skill-lock.json`**, which is fine because
-  every skill comes from a tracked repo.
-- `~/.claude/skills/` etc. — symlinks, created and maintained by the
-  `skills` CLI itself.
-- `.skill-lock.json` is the single source of truth. Two failure modes to
-  watch for: a dir with no lock entry (gets pruned — see the drift audit
-  below) and a lock entry with no dir (`skills update` fails on it; the
-  CLI can't remove it either, so drop the JSON entry by hand).
+```fish
+grep -v '^#' ~/.local/share/chezmoi/skills.txt      # what the last machine had
+skills add tw93/Waza -g -y -s hunt                   # install one
+```
 
-Helper scripts live in this repo (`scripts/`, not rendered into `~/`):
+- `~/.agents/skills/` — real skill dirs, owned by the `skills` CLI.
+- `~/.claude/skills/` — symlinks made by the CLI, plus two app-owned dirs
+  to leave alone: `rex` (Rex terminal app) and `synced/` (claude.ai sync).
+- Upstream packs rename and drop skills, so `skills remove` can be
+  one-way. Removing a skill locally is not "temporary".
+
+Helper scripts (`scripts/`, not rendered into `~/`):
 
 ```fish
 set src ~/.local/share/chezmoi
-
-# reinstall/refresh everything in the lockfile
-$src/scripts/update-skills.fish       # or a subset: update-skills.fish hugo pdf
-
-# raw CLI
-skills check / update / list
-skills add <owner>/<repo> -g -y
-skills remove -s <name> -g -y
-
-# drift audit: anything listed here would be pruned on the next CLI run —
-# either `skills add` it from its source pack or delete it
-$src/scripts/list-uncaptured-skills.fish
+$src/scripts/update-skills.fish          # skills update, or per-skill refresh
+$src/scripts/list-uncaptured-skills.fish # dirs not in the local lockfile
+$src/scripts/skills-manifest.sh          # regenerate skills.txt by hand
 ```
 
-After any `skills add` / `remove` / `update`, capture the lockfile:
+## Linux
 
-```fish
-chezmoi re-add ~/.agents/.skill-lock.json   # then commit here
-```
+`.chezmoiignore` skips macOS-only targets (`Library/`, `.Brewfile`) when
+`.chezmoi.os` isn't `darwin`, and the brew install script renders empty
+there. Install fish/git/gh with the distro's package manager first.
 
 ## New machine bootstrap
 
@@ -126,11 +133,14 @@ chezmoi init --apply rexarski/dotfiles
 #    └─ writes all configs AND runs run_onchange_install-packages:
 #       brew bundle --global + npm install -g skills
 
-# 2. skills
-~/.local/share/chezmoi/scripts/update-skills.fish
-#                                     # materialize every lockfile-tracked skill
+# 2. enable the repo hooks (skills.txt refresh + conventional-commit check)
+git -C ~/.local/share/chezmoi config core.hooksPath .githooks
+ya pkg install                        # yazi plugins/flavors from package.toml
 
-# 3. commit signing (see next section)
+# 3. skills (optional, selective — see skills.txt)
+skills add <source> -g -y -s <name>
+
+# 4. commit signing (see next section)
 ```
 
 ## Commit signing on a new machine
