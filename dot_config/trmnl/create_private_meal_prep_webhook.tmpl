@@ -1,0 +1,4 @@
+{{- /* TRMNL plugin webhook — secret; lives in 1Password, fetched at apply. */ -}}
+{{ if lookPath "op" -}}
+{{ onepasswordRead "op://Private/TRMNL meal prep webhook/password" }}
+{{ end -}}
