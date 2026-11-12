@@ -33,8 +33,16 @@ and commands live in [README.md](README.md) — this file is invariants only.
   from git. No API keys / tokens in any tracked file, ever.
 - Before `chezmoi re-add` of any config an app rewrites,
   skim the diff for injected credentials.
-- Secret-bearing configs need `chezmoi secret` / 1Password template
-  lookups, not plain files.
+- Secret-bearing configs need 1Password template lookups, not plain
+  files: `{{ if lookPath "op" }}{{ onepasswordRead "op://Private/…" }}`.
+  Hand-create these `.tmpl` sources — **never `chezmoi add` a file that
+  holds a secret** (it copies the value into source). Verify with
+  `chezmoi cat <target> | cmp - <target>`, and grep the repo for the
+  value's domain before committing. Existing: `dot_config/trmnl/`.
+- Prefix secret templates with `create_` so `op` runs only when the
+  target is missing; without it every `status`/`diff`/`apply` hits
+  1Password (measured: 2 `op` calls each). Rotation = delete target,
+  then `chezmoi apply --force <target>`.
 
 ## Skills
 
@@ -93,7 +101,10 @@ the private key never leaves 1Password.
 
 `.githooks/` (repo-only, enable per clone with
 `git config core.hooksPath .githooks`): `pre-commit` regenerates and
-stages `skills.txt`; `commit-msg` rejects non-conventional messages.
+stages `skills.txt` and `tinycast-extensions.txt`; `commit-msg` rejects
+non-conventional messages. Both manifests reflect the *last committing
+machine*; never hand-edit them. Tinycast settings/clipboard/extension
+files are never tracked (binary, churny, private).
 Don't bypass with `--no-verify`.
 
 ## Keep the README in sync
