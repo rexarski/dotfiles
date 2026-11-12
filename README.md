@@ -147,8 +147,10 @@ template that reads it at apply time:
   To pick up a rotated secret:
   `rm <target> && chezmoi apply --force <target>`.
 - Verify: `chezmoi cat <target> | cmp - <target>` before committing.
-- Needs 1Password → Settings → Developer → *Integrate with 1Password CLI*
-  on a new machine, for that first create.
+- `op` comes from the Brewfile (`1password-cli`). Turn on 1Password →
+  Settings → Developer → *Integrate with 1Password CLI* **before** the
+  first apply on a machine — with `op` installed but not integrated, the
+  template errors and the apply stops.
 - Without `op` (e.g. Linux) the template renders empty and the file is
   simply not created.
 

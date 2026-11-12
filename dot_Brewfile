@@ -9,4 +9,5 @@ brew "jq"
 brew "node"   # for `npm install -g skills`
 
 cask "1password"
+cask "1password-cli"   # `op`, for 1Password-backed secret templates
 cask "ghostty"
