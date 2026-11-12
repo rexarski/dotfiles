@@ -1,3 +1,4 @@
+{{ if eq .chezmoi.os "darwin" -}}
 #!/bin/sh
 # Reruns whenever the Brewfile changes:
 # Brewfile hash: {{ include "dot_Brewfile" | sha256sum }}
@@ -5,3 +6,4 @@ set -e
 
 brew bundle --global --no-upgrade
 command -v skills >/dev/null || npm install -g skills
+{{ end -}}

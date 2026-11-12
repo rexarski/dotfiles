@@ -1,3 +1,12 @@
+# repo-only files, never rendered into ~/
 README.md
 CLAUDE.md
 scripts
+skills.txt
+.githooks
+
+# macOS-only: skip on Linux and anything else
+{{ if ne .chezmoi.os "darwin" }}
+Library
+.Brewfile
+{{ end }}
