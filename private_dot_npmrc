@@ -1,0 +1,10 @@
+ignore-scripts=true
+strict-ssl=true
+save-exact=true
+prefer-dedupe=true
+audit=true
+update-notifier=false
+fund=false
+loglevel=warn
+registry=https://registry.npmjs.org/
+min-release-age=3

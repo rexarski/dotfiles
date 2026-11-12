@@ -1,0 +1,14 @@
+// Compact snapshot used by fish_greeting
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": null,
+  "display": { "key": { "width": 9 } },
+  "modules": [
+    { "type": "os",      "key": "OS" },
+    { "type": "kernel",  "key": "Kernel" },
+    { "type": "cpu",     "key": "CPU" },
+    { "type": "memory",  "key": "Memory" },
+    { "type": "disk",    "key": "Disk", "folders": "/" },
+    { "type": "battery", "key": "Battery" }
+  ]
+}

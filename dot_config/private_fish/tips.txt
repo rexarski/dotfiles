@@ -1,0 +1,30 @@
+# One tip per line. Lines starting with # are ignored. Shown randomly by fish_greeting.
+# ── your aliases / functions (config.fish) ──
+ll / lla → eza long listing, lla includes hidden files
+em → emacs in the terminal (emacs -nw)  ·  emacsgui → GUI emacs
+y → yazi file manager, and cd into the directory you quit from
+peon → peon-ping quick controls (~/.claude/hooks/peon-ping)
+z <dir> → zoxide jump by fuzzy name  ·  zi → interactive picker
+pip / python → aliased to pip3 / python3
+# ── fish editing shortcuts ──
+Ctrl+R → search history in the pager
+Alt+↑ / Alt+↓ → search history for the token under the cursor
+→ or Ctrl+F → accept the whole autosuggestion  ·  Alt+→ or Alt+F → accept one word
+Alt+E → open the current command line in $EDITOR
+Alt+S → prepend sudo to the current command
+Alt+P → append  | less  to the current command
+Alt+L → run ls on the directory under the cursor without losing your command line
+Alt+W → one-line description of the command under the cursor  ·  Alt+H → open its man page
+Alt+O → preview the file under the cursor in a pager (less)
+Alt+← / Alt+→ on an empty line → prevd / nextd through directory history
+cdh → pick from recently visited directories  ·  dirh → list them
+Ctrl+Z → undo  ·  Alt+/ → redo
+Ctrl+W → delete the word before the cursor  ·  Ctrl+U → delete to the start of line
+Alt+D → delete the word after the cursor  ·  Alt+U / Alt+C → uppercase / capitalize word
+Shift+Enter or Alt+Enter → insert a newline without running the command
+Ctrl+X → copy the whole command line to the clipboard
+Ctrl+L → clear the screen
+abbr -a gco git checkout → an abbreviation that expands as you type (you have none yet)
+fish_config → open the web UI for colors, prompt and bindings
+help <topic> → open fish docs in the browser  ·  bind → list every key binding
+string, math, path → fish builtins that replace sed/awk/bc for most one-liners
