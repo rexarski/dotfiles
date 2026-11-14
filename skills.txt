@@ -59,8 +59,8 @@ obra/superpowers	brainstorming
 op7418/guizang-ppt-skill	guizang-ppt-skill
 rexarski/skills	learn-quiz
 rexarski/skills	yasqat-release
-stablyai/orca	computer-use
 stablyai/orca	orca-cli
+stablyai/orca	orca-computer-use
 stablyai/orca	orchestration
 sugarforever/boring-video-studio	boring-video
 sugarforever/boring-video-studio	to-narration
@@ -80,5 +80,4 @@ tw93/Waza	write
 wshobson/agents	python-packaging
 wshobson/agents	python-performance-optimization
 yetone/kill-ai-slop	kill-ai-slop
-(app-installed)	orca-computer-use
 (app-installed)	rex
