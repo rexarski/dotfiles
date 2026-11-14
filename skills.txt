@@ -34,7 +34,6 @@ mattpocock/skills	loop-me
 mattpocock/skills	migrate-to-shoehorn
 mattpocock/skills	prototype
 mattpocock/skills	research
-mattpocock/skills	resolving-merge-conflicts
 mattpocock/skills	retro
 mattpocock/skills	scaffold-exercises
 mattpocock/skills	setup-matt-pocock-skills
@@ -59,9 +58,6 @@ obra/superpowers	brainstorming
 op7418/guizang-ppt-skill	guizang-ppt-skill
 rexarski/skills	learn-quiz
 rexarski/skills	yasqat-release
-stablyai/orca	orca-cli
-stablyai/orca	orca-computer-use
-stablyai/orca	orchestration
 sugarforever/boring-video-studio	boring-video
 sugarforever/boring-video-studio	to-narration
 sugarforever/boring-video-studio	to-scenes
@@ -80,4 +76,3 @@ tw93/Waza	write
 wshobson/agents	python-packaging
 wshobson/agents	python-performance-optimization
 yetone/kill-ai-slop	kill-ai-slop
-(app-installed)	rex

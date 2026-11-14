@@ -9,6 +9,10 @@ lock="$HOME/.agents/.skill-lock.json"
 dir="$HOME/.agents/skills"
 out="$repo/skills.txt"
 
+# Skills an app installs and maintains itself (Orca, Rex) — never listed,
+# whether the app or the skills CLI put them there.
+app_owned='^(orca-|orchestration$|rex$)|^stablyai/orca	'
+
 [ -f "$lock" ] || { echo "skills-manifest: $lock not found, skipping" >&2; exit 0; }
 command -v jq >/dev/null || { echo "skills-manifest: jq not on PATH, skipping" >&2; exit 0; }
 
@@ -17,12 +21,13 @@ command -v jq >/dev/null || { echo "skills-manifest: jq not on PATH, skipping" >
   echo "# Install one:  skills add <source> -g -y -s <name>"
   echo "#"
   echo "# source	name"
-  jq -r '.skills | to_entries[] | "\(.value.source)\t\(.key)"' "$lock" | sort
-  # dirs the skills CLI doesn't own (e.g. installed by an app like Rex)
+  jq -r '.skills | to_entries[] | "\(.value.source)\t\(.key)"' "$lock" | sort |
+    grep -Ev "$app_owned" || true
+  # dirs the skills CLI doesn't own and no known app maintains: surface them
   if [ -d "$dir" ]; then
     jq -r '.skills | keys[]' "$lock" | sort >"$out.tracked"
     find "$dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort |
-      comm -23 - "$out.tracked" | sed 's/^/(app-installed)	/'
+      comm -23 - "$out.tracked" | grep -Ev "$app_owned" | sed 's/^/(app-installed)	/'
     rm -f "$out.tracked"
   fi
 } >"$out"

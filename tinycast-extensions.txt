@@ -3,9 +3,7 @@
 1password
 amphetamine
 anna-s-archive
-apple-maps-search
 audio-device
-brew
 douban
 drafts
 f1-standings
@@ -24,8 +22,6 @@ myip
 nba-game-viewer
 neodb
 netlify
-obsidian
-obsidian-smart-capture
 pagespeed
 premier-league
 protondb

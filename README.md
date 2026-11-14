@@ -110,6 +110,8 @@ skills add tw93/Waza -g -y -s hunt                   # install one
 - `~/.agents/skills/` — real skill dirs, owned by the `skills` CLI.
 - `~/.claude/skills/` — symlinks made by the CLI, plus two app-owned dirs
   to leave alone: `rex` (Rex terminal app) and `synced/` (claude.ai sync).
+- Rex's and Orca's skills are left out of skills.txt: each app installs
+  and updates its own on every machine.
 - Upstream packs rename and drop skills, so `skills remove` can be
   one-way. Removing a skill locally is not "temporary".
 
